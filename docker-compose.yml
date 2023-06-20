@@ -12,7 +12,7 @@ services:
     restart: unless-stopped
     working_dir: /var/www/
     volumes:
-      - ./todo:/var/www
+      - ./app:/var/www
       - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
     networks:
       - app-network
@@ -48,6 +48,20 @@ services:
     networks:
       - app-network
 
+  frontend:
+    build:
+      context: ./  # Путь к директории с кодом фронтенда
+      dockerfile: Dockerfile.spa
+    image: vue-frontend
+    container_name: vue-frontend
+    restart: unless-stopped
+    ports:
+      - 8080:8080  # Порт, на котором будет работать фронтенд-сервис
+    volumes:
+      - ./frontend/todo-vue-spa:/app  # Монтируем код фронтенда внутрь контейнера
+    networks:
+      - app-network
+      
 networks:
   app-network:
     driver: bridge
