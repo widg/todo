@@ -59,13 +59,16 @@ class TasksApiController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Todo $todo)
-    {
-        //
-        $todo = Todo::findOrFail($id);
-        $todo->is_completed = !$todo->is_completed;
-        $todo->save();
-    }
+    public function update(Request $request, Todo $todo, $id)
+{
+    $todo = Todo::findOrFail($id);
+    $todo->title = $request->input('title');
+    $todo->description = $request->input('description');
+    $todo->is_completed = $request->input('is_completed');
+    $todo->save();
+
+    return response()->json($todo);
+}
 
     /**
      * Remove the specified resource from storage.
