@@ -73,9 +73,8 @@ class TasksApiController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Todo $todo)
+    public function destroy($id)
     {
-        //
         $todo = Todo::findOrFail($id);
         $todo->delete();
     }

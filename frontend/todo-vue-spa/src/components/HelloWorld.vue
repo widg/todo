@@ -9,7 +9,7 @@
     <ul>
       <li v-for="todo in todos" :key="todo.id">
         <div v-if="!todo.editing">
-          <span @click="editTodo(todo)">{{ todo.title }}</span>
+          <span @click="editTodo(todo)" :class="{ 'completed': todo.is_completed }">{{ todo.title }}</span>
           <button @click="deleteTodo(todo.id)">Delete</button>
         </div>
         <div v-else>
@@ -22,6 +22,12 @@
     </ul>
   </div>
 </template>
+
+<style>
+.completed {
+  text-decoration: line-through;
+}
+</style>
 
 <script>
 const API_BASE_URL = 'http://localhost:8000/api/tasks/';
