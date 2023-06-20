@@ -14,7 +14,7 @@ class TasksApiController extends Controller
     {
         //
         $todo = Todo::All();
-        return $todo;
+        return response()->json($todo);
     }
 
     /**
@@ -31,10 +31,10 @@ class TasksApiController extends Controller
     public function store(Request $request)
     {
         //
-        $this->validate($request, ['name' => 'required']);
+        $this->validate($request, ['title' => 'required']);
 
         $newTask = Todo::create([
-            'name' => $request->get('name'),
+            'title' => $request->get('title'),
         ]);
 
         return response()->json($newTask);

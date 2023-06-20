@@ -19,4 +19,7 @@ use App\Http\Controllers\TasksApiController;
 //     return $request->user();
 // });
 
-Route::apiResource('tasks', TasksApiController::class);
+
+Route::middleware(['cors'])->group(function () {
+    Route::apiResource('tasks', TasksApiController::class);
+});
