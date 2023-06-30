@@ -62,26 +62,6 @@ services:
     networks:
       - app-network
 
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile.api
-    container_name: api-backup
-    restart: unless-stopped
-    ports:
-      - 5000:5000
-    depends_on:
-      - db
-    environment:
-      - MYSQL_HOST=laravel-db
-      - MYSQL_USER=${DB_USERNAME}
-      - MYSQL_PASSWORD=${DB_PASSWORD}
-      - MYSQL_DB=${DB_DATABASE}
-    networks:
-      - app-network
-    volumes:
-      - ./api:/app  # Монтируем код
-
 networks:
   app-network:
     driver: bridge

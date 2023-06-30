@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TasksApiController;
+use App\Http\Controllers\JobsApiController  ;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,4 +23,5 @@ use App\Http\Controllers\TasksApiController;
 
 Route::middleware(['cors'])->group(function () {
     Route::apiResource('tasks', TasksApiController::class);
+    Route::apiResource('jobs', JobsApiController::class);
 });

@@ -1,5 +1,5 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
+  <img class="limited-image"  alt="Vue logo" src="./assets/jobs.jpg">
   <HelloWorld msg="Welcome to Your Vue.js App"/>
 </template>
 
@@ -22,5 +22,10 @@ export default {
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+
+  .limited-image {
+    max-width: 10%;
+    max-height: 10%;
+  }
 }
 </style>

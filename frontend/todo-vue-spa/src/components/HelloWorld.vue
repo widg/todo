@@ -1,115 +1,149 @@
 <template>
   <div>
-    <h1>Todo List</h1>
-    <form @submit.prevent="addTodo">
-      <input type="text" v-model="newTodo" placeholder="Add Todo" />
-      <button type="submit">Add</button>
+    <form @submit.prevent="createJob" v-if="!editing">
+      <input v-model="formData.title" type="text" placeholder="Название" required>
+      <textarea v-model="formData.description" placeholder="Описание" required></textarea>
+      <input v-model="formData.price" type="number" placeholder="Цена" required>
+      <button type="submit">Создать</button>
+    </form>
+
+    <form @submit.prevent="updateJob" v-if="editing">
+      <input v-model="editFormData.title" type="text" placeholder="Название" required>
+      <textarea v-model="editFormData.description" placeholder="Описание" required></textarea>
+      <input v-model="editFormData.price" type="number" placeholder="Цена" required>
+      <button type="submit">Сохранить</button>
+      <button @click="cancelEditing">Отмена</button>
     </form>
 
     <ul>
-      <li v-for="todo in todos" :key="todo.id">
-        <div v-if="!todo.editing">
-          <span @click="editTodo(todo)" :class="{ 'completed': todo.is_completed }">{{ todo.title }}</span>
-          <button @click="deleteTodo(todo.id)">Delete</button>
-        </div>
-        <div v-else>
-          <input v-model="todo.title" />
-          <input v-model="todo.description" />
-          <input type="checkbox" v-model="todo.is_completed" />
-          <button @click="saveTodo(todo)">Save</button>
-        </div>
+      <li v-for="job in jobs" :key="job.id">
+        <h3>{{ job.title }}</h3>
+        <p>{{ job.description }}</p>
+        <p>Цена: {{ job.price }}</p>
+        <button @click="startEditing(job.id)">Изменить</button>
+        <button @click="deleteJob(job.id)">Удалить</button>
       </li>
     </ul>
   </div>
 </template>
 
-<style>
-.completed {
-  text-decoration: line-through;
-}
-</style>
-
 <script>
-const API_BASE_URL = 'http://localhost:8000/api/tasks/';
-
 export default {
   data() {
     return {
-      todos: [],
-      newTodo: '',
+      jobs: [],
+      formData: {
+        title: '',
+        description: '',
+        price: ''
+      },
+      editing: false,
+      editFormData: {
+        id: null,
+        title: '',
+        description: '',
+        price: ''
+      }
     };
   },
+  created() {
+    this.fetchJobs();
+  },
   methods: {
-    async addTodo() {
-      // Отправка запроса к API для создания нового Todo
-      const response = await fetch('http://localhost:8000/api/tasks', {
+    fetchJobs() {
+      fetch('http://localhost:8000/api/jobs')
+        .then(response => response.json())
+        .then(data => {
+          this.jobs = data;
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    },
+    fetchCreatedJob(jobId) {
+      fetch(`http://localhost:8000/api/jobs/${jobId}`)
+        .then(response => response.json())
+        .then(data => {
+          this.jobs.push(data);
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    },
+    createJob() {
+      fetch('http://localhost:8000/api/jobs', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title: this.newTodo,
-        }),
+        body: JSON.stringify(this.formData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        this.fetchCreatedJob(data.id);
+        this.formData.title = '';
+        this.formData.description = '';
+        this.formData.price = '';
+      })
+      .catch(error => {
+        console.error(error);
       });
-
-      if (response.ok) {
-        // Обновление списка Todo после успешного создания
-        this.fetchTodos();
-        this.newTodo = '';
+    },
+    startEditing(jobId) {
+      const job = this.jobs.find(job => job.id === jobId);
+      if (!job) {
+        console.error(`Задание с идентификатором ${jobId} не найдено.`);
+        return;
       }
-    },
-    async deleteTodo(todoId) {
-      // Отправка запроса к API для удаления Todo по идентификатору
-      const response = await fetch(`http://localhost:8000/api/tasks/${todoId}`, {
-        method: 'DELETE',
-      });
 
-      if (response.ok) {
-        // Обновление списка Todo после успешного удаления
-        this.fetchTodos();
-      }
+      this.editing = true;
+      this.editFormData.id = job.id;
+      this.editFormData.title = job.title;
+      this.editFormData.description = job.description;
+      this.editFormData.price = job.price;
     },
-    async editTodo(todo) {
-      todo.editing = true;
+    cancelEditing() {
+      this.editing = false;
+      this.editFormData.id = null;
+      this.editFormData.title = '';
+      this.editFormData.description = '';
+      this.editFormData.price = '';
     },
-    async saveTodo(todo) {
-    try {
-      const response = await fetch(API_BASE_URL + todo.id, {
+
+    updateJob() {
+      const { id, title, description, price } = this.editFormData;
+
+      fetch(`http://localhost:8000/api/jobs/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          title: todo.title,
-          description: todo.description,
-          is_completed: todo.is_completed,
-        }),
-      });
-
-      if (response.ok) {
-        // Задача успешно сохранена
-        todo.editing = false;
-      } else {
-        // Обработка ошибки сохранения задачи
-      }
-    } catch (error) {
-      // Обработка ошибки сети
-    }
-  },
-    async fetchTodos() {
-      // Отправка запроса к API для получения списка Todo
-      const response = await fetch('http://localhost:8000/api/tasks');
-
-
-      const data = await response.json();
-
-      if (response.ok) {
-        this.todos = data;
-      }
+        body: JSON.stringify({ title, description, price }),
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Ошибка при обновлении задания');
+          }
+          // Обновление списка заданий после успешного обновления
+          this.fetchJobs();
+          this.cancelEditing();
+        })
+        .catch(error => {
+          console.error('Ошибка при обновлении задания:', error);
+        });
     },
-  },
-  mounted() {
-    this.fetchTodos();
-  },
+    deleteJob(jobId) {
+      fetch(`http://localhost:8000/api/jobs/${jobId}`, {
+        method: 'DELETE',
+      })
+      .then(response => response.json())
+      .then(() => {
+        this.jobs = this.jobs.filter(job => job.id !== jobId);
+      })
+      .catch(error => {
+        console.error(error);
+      });
+    }
+  }
 };
 </script>
